@@ -1,0 +1,11 @@
+syntax = "proto3";
+package greetPb;
+
+option go_package = "./greetPb";
+
+import "buf/validate/validate.proto";
+
+message GreetRequest {
+  string name = 1 [(buf.validate.field).string.min_len = 3];
+  int32 age = 2 [(buf.validate.field).int32.gte = 18];
+}
