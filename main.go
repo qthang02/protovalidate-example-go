@@ -1,34 +1,47 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"errors"
 	"github.com/bufbuild/protovalidate-go"
 	"github.com/qthang02/protovalidate-example/protobuf/greetPb"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"log"
+	"net"
 )
 
-func main() {
+type server struct {
+	*greetPb.UnimplementedGreetServiceServer
+}
+
+func (s *server) Greet(ctx context.Context, req *greetPb.GreetRequest) (*greetPb.GreetResponse, error) {
 	validator, err := protovalidate.New()
 	if err != nil {
 		panic(err)
 	}
 
-	req := &greetPb.GreetRequest{
-		Name: "John",
-		Age:  25,
-	}
-
 	if err := validator.Validate(req); err != nil {
-		fmt.Println("Validation failed:", err)
+		return nil, errors.New("validation failed: " + err.Error())
 	} else {
-		fmt.Println("Validation passed!")
+		return nil, err
 	}
 
-	invalidReq := &greetPb.GreetRequest{
-		Name: "Jo",
-		Age:  16,
+	return nil, nil
+}
+
+func main() {
+
+	lis, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		log.Fatalln("Failed to listen:", err)
 	}
 
-	if err := validator.Validate(invalidReq); err != nil {
-		fmt.Println("Validation failed for invalidReq:", err)
-	}
+	s := grpc.NewServer()
+
+	greetPb.RegisterGreetServiceServer(s, &server{})
+	reflection.Register(s)
+
+	log.Println("Serving gRPC on 0.0.0.0:8080")
+	log.Fatal(s.Serve(lis))
 }

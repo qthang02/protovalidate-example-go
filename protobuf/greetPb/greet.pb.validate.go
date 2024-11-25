@@ -59,6 +59,8 @@ func (m *GreetRequest) validate(all bool) error {
 
 	// no validation rules for Age
 
+	// no validation rules for Status
+
 	if len(errors) > 0 {
 		return GreetRequestMultiError(errors)
 	}
@@ -134,3 +136,102 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GreetRequestValidationError{}
+
+// Validate checks the field values on GreetResponse with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *GreetResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on GreetResponse with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in GreetResponseMultiError, or
+// nil if none found.
+func (m *GreetResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *GreetResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return GreetResponseMultiError(errors)
+	}
+	return nil
+}
+
+// GreetResponseMultiError is an error wrapping multiple validation errors
+// returned by GreetResponse.ValidateAll() if the designated constraints
+// aren't met.
+type GreetResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m GreetResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m GreetResponseMultiError) AllErrors() []error { return m }
+
+// GreetResponseValidationError is the validation error returned by
+// GreetResponse.Validate if the designated constraints aren't met.
+type GreetResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e GreetResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e GreetResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e GreetResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e GreetResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e GreetResponseValidationError) ErrorName() string { return "GreetResponseValidationError" }
+
+// Error satisfies the builtin error interface
+func (e GreetResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sGreetResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = GreetResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = GreetResponseValidationError{}
